@@ -1,0 +1,270 @@
+{{!-- <input type="hidden" value="{{this.bot}}" name="bot"/> --}}
+<div style="display: flex; justify-content: center;">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create">
+        Add Task
+    </button>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Task</th>
+                <th scope="col">Content</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            {{#each tasks}}
+                <tr>
+                    <td class="date">{{this.date}}</td>
+                    <td>{{this.task}}</td>
+                    <td class="{{this.class}}">{{this.content}}</td>
+                    <td>
+                        <button class="btn btn-primary btn-update" 
+                            data-date="{{this.date}}">Update</button>
+                    </td>
+                </tr>
+            {{/each}}
+
+        </tbody>
+    </table>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modal-create">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"> 
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" class="form-control" name="date" required="true">
+                </div>
+                <div class="form-group">
+                    <label for="task1">Task 1</label>
+                    <textarea class="form-control" id="task1" name="task1" rows="10" required="true"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task2">Task 2</label>
+                    <textarea class="form-control" id="task2" name="task2" rows="10" required="true"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task3">Task 3</label>
+                    <textarea class="form-control" id="task3" name="task3" rows="10" required="true"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task3">Task 4</label>
+                    <textarea class="form-control" id="task4" name="task4" rows="10" required="true"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-add">Add</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modal-update">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"> 
+                <div class="form-group">
+                    <label for="date_update">Date</label>
+                    <input type="date" id="date_update" class="form-control" name="date_update" required="true">
+                    <input type="hidden" id="old_date" class="form-control" name="old_date" value="">
+                </div>
+                <div class="form-group">
+                    <label for="task1_update">Task 1</label>
+                    <textarea class="form-control" id="task1_update" name="task1_update" rows="10" required="true">{{task1}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task2_update">Task 2</label>
+                    <textarea class="form-control" id="task2_update" name="task2_update" rows="10" required="true">{{task2}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task3_update">Task 3</label>
+                    <textarea class="form-control" id="task3_update" name="task3_update" rows="10" required="true">{{task3}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task4_update">Task 4</label>
+                    <textarea class="form-control" id="task4_update" name="task4_update" rows="10" required="true">{{task4}}</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-update">Update</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const bot = $('input[name="bot"]').val()
+    const BASE_URL = `http://localhost:9000`
+    //const BASE_URL = `http://198.252.110.62:9000`
+    $(document).ready(function () {
+
+        $('#btn-add').click(function () {
+            if ($('input[name="date"]').val() == '') {
+                $('input[name="date"]').focus()
+                alert('Date is required')
+            } else if ($('textarea[name="task1"]').val() == '') {
+                $('textarea[name="task1"]').focus()
+                alert('Task 1 is required')
+            } else if ($('textarea[name="task2"]').val() == '') {
+                $('textarea[name="task2"]').focus()
+                alert('Task 2 is required')
+            } else if ($('textarea[name="task3"]').val() == '') {
+                $('textarea[name="task3"]').focus()
+                alert('Task 3 is required')
+            } else if ($('textarea[name="task4"]').val() == '') {
+                $('textarea[name="task4"]').focus()
+                alert('Task 4 is required')
+            } else {
+                let url = `${BASE_URL}/tasks`
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        date: $('input[name="date"]').val(),
+                        task1: $('textarea[name="task1"]').val(),
+                        task2: $('textarea[name="task2"]').val(),
+                        task3: $('textarea[name="task3"]').val(),
+                        task4: $('textarea[name="task4"]').val(),
+                    },
+                    success: function (data) {
+                        console.log(data)
+                        if (!data.is_error) {
+                            window.location.href = url
+                        }else{
+                            if (data.message.search('login') != -1){
+                                window.location.href = BASE_URL + '/login'
+                            }else{
+                                alert(data.message)
+                            }
+                            
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+        $('#modal-create').on('hidden.bs.modal', function (e) {
+            $('input[name="date"]').val('')
+            $('input[name="task1"]').val('')
+            $('input[name="task2"]').val('')
+            $('input[name="task3"]').val('')
+            $('input[name="task4"]').val('')
+        })
+        $('#modal-update').on('hidden.bs.modal', function (e) {
+            $('input[name="date_update"]').val('')
+            $('input[name="task1_update"]').val('')
+            $('input[name="task2_update"]').val('')
+            $('input[name="task3_update"]').val('')
+            $('input[name="task4_update"]').val('')
+        })
+        
+        $('.btn-update').click(async function(){
+            $('#date_update').val($(this).attr('data-date'))
+            $('#old_date').val($(this).attr('data-date'))
+            $('#task1_update').val($('.Task_1').text())
+            $('#task2_update').val($('.Task_2').text())
+            $('#task3_update').val($('.Task_3').text())
+            $('#task4_update').val($('.Task_4').text())
+            $('#modal-update').modal('show')
+        })
+        $('#btn-update').click(function () {
+            if ($('input[name="date_update"]').val() == '') {
+                $('input[name="date_update"]').focus()
+                alert('Date is required')
+            } else if ($('textarea[name="task1_update"]').val() == '') {
+                $('textarea[name="task1_update"]').focus()
+                alert('Task 1 is required')
+            } else if ($('textarea[name="task2_update"]').val() == '') {
+                $('textarea[name="task2_update"]').focus()
+                alert('Task 2 is required')
+            } else if ($('textarea[name="task3_update"]').val() == '') {
+                $('textarea[name="task3_update"]').focus()
+                alert('Task 3 is required')
+            } else if ($('textarea[name="task4_update"]').val() == '') {
+                $('textarea[name="task4_update"]').focus()
+                alert('Task 4 is required')
+            } else {
+                let oldDate = $('input[name="old_date"]').val()
+                let url = `${BASE_URL}/tasks/${oldDate}`
+                $.ajax({
+                    url: url,
+                    type: "PUT",
+                    data: {
+                        oldDate,
+                        date: $('input[name="date_update"]').val(),
+                        task1: $('textarea[name="task1_update"]').val(),
+                        task2: $('textarea[name="task2_update"]').val(),
+                        task3: $('textarea[name="task3_update"]').val(),
+                        task4: $('textarea[name="task4_update"]').val(),
+                    },
+                    success: function (data) {
+                        console.log(data)
+                        if (!data.is_error) {
+                            window.location.href = `${BASE_URL}/tasks`
+                        }else{
+                            if (data.message.search('login') != -1){
+                                window.location.href = BASE_URL + '/login'
+                            }else{
+                                alert(data.message)
+                            }
+                            
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+        //$("form").submit(function(e){
+        //    e.preventDefault()
+        //})
+    })
+    function handleDelete(element) {
+        //console.log(element)
+        //console.log('click ', $(element).data('address'))
+        const id = $(element).attr('data-id')
+        let rtn = confirm("Confirm Delete")
+        if (rtn) {
+            $.ajax({
+                url: `${BASE_URL}/tasks/${id}`,
+                type: "DELETE",
+                success: function (data) {
+                    //console.log(data)
+                    if (!data.is_error) {
+                        $(element).parent().parent().remove()
+                    }
+                    alert(data.message)
+                },
+                error: function (xhr, status, error) {
+                    //console.log(xhr)
+                    alert(xhr.responseText)
+                }
+            })
+        }
+    }
+
+</script>

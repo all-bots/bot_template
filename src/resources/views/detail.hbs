@@ -1,0 +1,38 @@
+<div class="table-responsive"></div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+        {{#each dates}}
+        <tr class="item" data-date="{{this.date}}"> 
+            <td>{{this.date}}</td>
+            {{#if this.isCheck}}
+                <td>Checked</td>
+            {{else}}
+                <td>Uncheck</td>
+            {{/if}}
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    //const BASE_URL = 'http://localhost:9000'
+    const BASE_URL = 'http://198.252.110.62:9000'
+
+    $(document).ready(function () {
+        $('.item').click(function(){
+            let url = document.URL
+            if (url[url.length - 1] == "/"){
+                window.location.href = url + $(this).attr('data-date')
+            }else{
+                window.location.href = url + '/' + $(this).attr('data-date')
+            }
+        })
+    })
+
+</script>

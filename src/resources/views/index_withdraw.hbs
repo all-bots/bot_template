@@ -1,0 +1,103 @@
+<div class="table-responsive table-scroll">
+    <table class="table">
+        <thead  class="header">
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">chatId</th>
+                <th scope="col">Địa chỉ ví nhận</th>
+                <th scope="col">amount USD</th>
+                <th scope="col">amount Transfer</th>
+                <th scope="col">Token Nhận</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            {{#each transactions}}
+            <tr>
+                <td>{{this.index}}</td>
+                <td>{{this.chatId}}</td>
+                <td> {{this.address}}</td>
+                <td> {{this.amount}}</td>
+                <td> {{this.amountToken}}</td>
+                <td> {{this.currency}}</td>
+                <td>
+                        <button class="btn btn-primary btn-confirm" data-id="{{this.id}}"
+                            data-chatId="{{this.chatId}}">Xác nhận</button>
+                </td>
+            </tr>
+            {{/each}}
+            
+        </tbody>
+    </table>
+</div>
+
+{{#if show}}
+<div class="d-flex justify-content-center" >
+    <ul>
+        {{#paginate pagination type="first"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">First</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="previous"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">Prev</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="middle" limit="3"}}
+        <li {{#if active}}class="active"{{/if}}><a href="?p={{n}}">{{n}}</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="next"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">Next</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="last"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">Last</a></li>
+        {{/paginate}}
+    </ul>
+</div>
+{{/if}}
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: #333333;
+  text-align: center;
+  padding: 16px;
+  text-decoration: none;
+}
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('.btn-confirm').click(function () {
+            let id = $(this).attr('data-id')
+            if (confirm(`Confirm đã chuyển tiền`)) {
+                $.ajax({
+                    url: `withdraw/${id}`,
+                    type: "POST",
+                    success: function (data) {
+                        //console.log(data)
+                        if (data.is_error){
+                            alert(data.message)
+                            return
+                        }
+                        alert("Confirm Successfull")
+                        window.location.reload()
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+        
+    })
+
+</script>

@@ -1,0 +1,129 @@
+<div class="table-responsive table-scroll">
+    <table class="table">
+        <thead  class="header">
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">Name</th>
+                <th scope="col">Username</th>
+                <th scope="col">Code</th>
+                <th scope="col">link video</th>
+                <th scope="col">status</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            {{#each users}}
+            <tr>
+                <td>{{this.index}}</td>
+                <td>{{this.first_name}}</td>
+                <td>@{{this.username}}</td>
+                <td>{{this.code}}</td>
+                <td> <a href="/{{this.video}}" target="_blank">video</a></td>
+                <td>
+                    {{#if this.isCheck}}
+                        <button class="btn btn-primary btn-approval" data-id="{{this.id}}"
+                            data-chatId="{{this.chat_id}}">Approve</button>
+                        <button class="btn btn-primary btn-reject" style="margin-left: 10px" data-id="{{this.id}}"
+                            data-chatId="{{this.chat_id}}">Reject</button>
+                    {{else}}
+                        {{this.status}}
+                    {{/if}}
+                </td>
+            </tr>
+            {{/each}}
+            
+        </tbody>
+    </table>
+</div>
+
+{{#if show}}
+<div class="d-flex justify-content-center" >
+    <ul>
+        {{#paginate pagination type="first"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">First</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="previous"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">Prev</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="middle" limit="3"}}
+        <li {{#if active}}class="active"{{/if}}><a href="?p={{n}}">{{n}}</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="next"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">Next</a></li>
+        {{/paginate}}
+        {{#paginate pagination type="last"}}
+        <li {{#if disabled}}class="disabled"{{/if}}><a href="?p={{n}}">Last</a></li>
+        {{/paginate}}
+    </ul>
+</div>
+{{/if}}
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: #333333;
+  text-align: center;
+  padding: 16px;
+  text-decoration: none;
+}
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('.btn-approval').click(function () {
+            let chatId = $(this).attr('data-chatId')
+            if (confirm(`Confirm Approval KYC`)) {
+                $.ajax({
+                    url: `approval/${chatId}`,
+                    type: "POST",
+                    success: function (data) {
+                        //console.log(data)
+                        if (data.isError){
+                            alert(data.message)
+                            return
+                        }
+                        alert("Approval Successfull")
+                        window.location.reload()
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+        
+        $('.btn-reject').click(function () {
+            let chatId = $(this).attr('data-chatId')
+            if (confirm(`Confirm Reject KYC`)) {
+                $.ajax({
+                    url: `reject/${chatId}`,
+                    type: "POST",
+                    success: function (data) {
+                        //console.log(data)
+                        if (data.isError){
+                            alert(data.message)
+                            return
+                        }
+                        alert("Reject Successfull")
+                        window.location.reload()
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+    })
+
+</script>

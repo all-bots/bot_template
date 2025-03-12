@@ -1,0 +1,162 @@
+<input type="hidden" value="{{this.chatId}}" name="chatId"/>
+<div style="font-weight: bold;">
+    Date: {{date}}
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Step</th>
+                <th scope="col">Screenshot</th>
+                <th scope="col">Valid</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            {{#each reports}}
+                <tr>
+                    <td>{{this.step}}</td>
+                    {{#if this.is_step5}}
+                        <td><a href="{{this.linkFile}}" target="_blank">link video</a></td>
+                    {{else}}
+                        <td><img src="http://198.252.110.62:9000/images/{{this.linkFile}}"></td>
+                    {{/if}}
+                    {{#if this.isCheck}}
+                        <td>Checked</td>
+                    {{else}}
+                        <td>Uncheck</td>
+                    {{/if}}
+                </tr>
+            {{/each}}
+
+        </tbody>
+    </table>
+</div>
+
+{{#if is_checked }}
+    <div style="display: flex; justify-content: center;">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-update">
+            Update Result
+        </button>
+    </div>
+{{/if}}
+
+<div class="modal" tabindex="-1" role="dialog" id="modal-update">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Result</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"> 
+                <input type="hidden" id="date" class="form-control" name="date" value="{{date}}">
+                <div class="form-group">
+                    <label for="post">Amount of post valid</label>
+                    <input type="number" id="post" class="form-control" name="post" required="true">
+                </div>
+                <div class="form-group">
+                    <label for="comment">Amount of comment/message valid</label>
+                    <input type="number" id="comment" class="form-control" name="comment" required="true">
+                </div>
+                <div class="form-group">
+                    <label for="inbox">Amount of inbox valid</label>
+                    <input type="number" id="inbox" class="form-control" name="inbox" required="true">
+                </div>
+                <div class="form-group">
+                    <label for="video">Video valid</label>
+                    <input type="checkbox" id="video" class="form-control" name="video" required="true">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-update">Update</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const bot = $('input[name="bot"]').val()
+    //const BASE_URL = `http://localhost:9000`
+    const BASE_URL = `http://198.252.110.62:9000`
+    $(document).ready(function () {
+        $('.btn-delete').click(function () {
+            handleDelete(this)
+        })
+
+        $('#btn-update').click(function () {
+            if ($('input[name="post"]').val() == '') {
+                $('input[name="post"]').focus()
+                alert('Amount of Post is required')
+            } else if ($('input[name="comment"]').val() == '') {
+                $('input[name="comment"]').focus()
+                alert('Amount of Comment/Message is required')
+            } 
+         //   else if ($('select[name="bot"]').val() == '') {
+          //      $('select[name="bot"]').focus()
+         //       alert('Bot is required')
+         //   } 
+            else {
+                let chatId = $('input[name="chatId"]').val()
+                let date = $('input[name="date"]').val()
+
+                let url = `${BASE_URL}/users/${chatId}/${date}`
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        post: $('input[name="post"]').val(),
+                        comment: $('input[name="comment"]').val(),
+                        inbox: $('input[name="inbox"]').val(),
+                        video: $('input[name="video"]').is(':checked') ? 1 : 0
+                    },
+                    success: function (data) {
+                        //console.log(data)
+                        if (!data.is_error) {
+                            window.location.href = url
+                        }else{
+                            alert(data.message)
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+        $('#modal-create').on('hidden.bs.modal', function (e) {
+            $('input[name="date"]').val('')
+            $('input[name="content"]').val('')
+        })
+        //$("form").submit(function(e){
+        //    e.preventDefault()
+        //})
+    })
+    function handleDelete(element) {
+        //console.log(element)
+        //console.log('click ', $(element).data('address'))
+        const id = $(element).attr('data-id')
+        let rtn = confirm("Confirm Delete")
+        if (rtn) {
+            $.ajax({
+                url: `${BASE_URL}/tasks/${id}`,
+                type: "DELETE",
+                success: function (data) {
+                    //console.log(data)
+                    if (!data.is_error) {
+                        $(element).parent().parent().remove()
+                    }
+                    alert(data.message)
+                },
+                error: function (xhr, status, error) {
+                    //console.log(xhr)
+                    alert(xhr.responseText)
+                }
+            })
+        }
+    }
+
+</script>

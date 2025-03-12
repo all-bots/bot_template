@@ -1,0 +1,258 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["filterJson"]
+}
+
+enum KycStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+
+  @@map(name: "kyc_status")
+}
+
+model User {
+  id           String         @id @default(uuid()) @db.Uuid
+  createdAt    DateTime       @default(now()) @map(name: "created_at")
+  updatedAt    DateTime       @updatedAt @map(name: "updated_at")
+  chatId       String         @unique @map("chat_id")
+  firstName    String         @map("first_name")
+  lastName     String?        @map("last_name")
+  username     String?
+  status       KycStatus      @default(SUBMITTED)
+  sponsorId    String?        @map("sponsor_id") @db.Uuid
+  Sponsor      User?          @relation("sponsor_ref", fields: [sponsorId], references: [id])
+  Ref          User[]         @relation("sponsor_ref")
+  timeCreate   String         @default("0:0")
+  Transaction  Transaction[]
+  WalletChange WalletChange[]
+  Code         Code[]
+  LogMine      LogMine[]
+  Wallet       Wallet?
+
+  @@index([chatId, id])
+  @@map(name: "user")
+}
+
+enum IdoType {
+  BNB
+  USD
+
+  @@map("ido_type")
+}
+
+model IdoLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  address   String
+  hash      String
+  idoType   IdoType  @default(USD) @map("ido_type")
+
+  @@map(name: "ido_log")
+}
+
+enum TransactionType {
+  WITHDRAW
+  MINE_TOKEN
+  BUY_PACKAGE
+
+  @@map(name: "transaction_type")
+}
+
+enum TransactionStatus {
+  SUBMITTED
+  APPROVED
+  PENDING
+  REJECTED
+
+  @@map(name: "transaction_status")
+}
+
+model Transaction {
+  id              String            @id @default(uuid()) @db.Uuid
+  createdAt       DateTime          @default(now()) @map(name: "created_at")
+  updatedAt       DateTime          @updatedAt @map(name: "updated_at")
+  amount          Float
+  amountToken     Float             @default(0)
+  package         Float             @default(0)
+  address         String            @default("")
+  status          TransactionStatus @default(SUBMITTED)
+  isSkip          Boolean           @default(false) @map("is_skip")
+  type            TransactionType
+  hash            String?
+  userId          String            @map("user_id") @db.Uuid
+  User            User              @relation(fields: [userId], references: [id])
+  WalletChange    WalletChange[]
+  expiration_date DateTime?         @default(now())
+  timeCreate      String?           @default("0:0")
+  Currency        Currency?         @relation(fields: [currencyId], references: [id])
+  currencyId      String?
+
+  @@index([type, userId, amount])
+  @@map(name: "transaction")
+}
+
+enum WalletChangeType {
+  FREE
+  MINE_TOKEN
+  REFFERAL_MINE_TOKEN
+  PACKAGE
+  WITHDRAW
+  REFFERAL
+
+  @@map("wallet_change_type")
+}
+
+model WalletChange {
+  id          String           @id @default(uuid())
+  createdAt   DateTime         @default(now()) @map(name: "created_at")
+  updatedAt   DateTime         @updatedAt @map(name: "updated_at")
+  amount      Float
+  type        WalletChangeType
+  eventId     String?          @map("event_id") @db.Uuid
+  Transaction Transaction?     @relation(fields: [eventId], references: [id])
+  userId      String           @map("user_id") @db.Uuid
+  User        User             @relation(fields: [userId], references: [id])
+  note        String?
+
+  @@index([userId, amount])
+  @@map(name: "wallet_change")
+}
+
+enum CodeStatus {
+  PENDING
+  VALID
+  INVALID
+
+  @@map(name: "code_status")
+}
+
+model Code {
+  id        String     @id @default(uuid()) @db.Uuid
+  createdAt DateTime   @default(now()) @map(name: "created_at")
+  updatedAt DateTime   @updatedAt @map(name: "updated_at")
+  code      String
+  image     String
+  date      DateTime
+  status    CodeStatus @default(PENDING)
+  userId    String     @map("user_id") @db.Uuid
+  User      User       @relation(fields: [userId], references: [id])
+
+  @@map(name: "code")
+}
+
+enum ConfigType {
+  AUTO_SEND_WITHDRAW
+  AUTO_FORWARD
+
+  @@map(name: "config_type")
+}
+
+model Config {
+  id        String     @id @default(uuid()) @db.Uuid
+  createdAt DateTime   @default(now()) @map(name: "created_at")
+  updatedAt DateTime   @updatedAt @map(name: "updated_at")
+  type      ConfigType @default(AUTO_SEND_WITHDRAW)
+  is_enable Boolean    @default(false)
+  time      Float      @default(0)
+
+  @@map(name: "config")
+}
+
+model Message {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  messageId String   @map("message_id")
+  content   String
+
+  @@map(name: "message")
+}
+
+model MessageBot {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  messageId String   @map("message_id")
+  chatId    String
+  content   String
+
+  @@map(name: "message_bot")
+}
+
+model LogMine {
+  id         String   @id @default(uuid()) @db.Uuid
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+  time_start DateTime
+  time_end   DateTime
+  userId     String   @map("user_id") @db.Uuid
+  User       User     @relation(fields: [userId], references: [id])
+
+  @@map(name: "log_mine")
+}
+
+model Wallet {
+  id          String   @id @default(uuid()) @db.Uuid
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  address     String
+  userId      String   @unique @map("user_id") @db.Uuid
+  User        User     @relation(fields: [userId], references: [id])
+  indexWallet Float    @map("index_wallet")
+
+  @@map(name: "wallet")
+}
+
+enum Crypto_Service {
+  BITCOIN
+  ETHEREUM
+  BSC
+  TRON
+  BANK
+  POLYGON
+
+  @@map(name: "crypto_service")
+}
+
+model Currency {
+  id             String          @id @default(uuid())
+  createdAt      DateTime        @default(now()) @map(name: "created_at")
+  updatedAt      DateTime        @updatedAt @map(name: "updated_at")
+  name           String
+  crypto_service Crypto_Service?
+  symbol         String
+  crypto_data    Json?
+  is_enable      Boolean         @default(true)
+  icon           String?
+  Transaction    Transaction[]
+
+  @@map(name: "currency")
+}
+
+enum CaptchaType {
+  CAPTCHA
+  CAPTCHA_SVG
+
+  @@map(name: "captcha_type")
+}
+
+model LockCaptcha {
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now()) @map(name: "created_at")
+  updatedAt DateTime    @updatedAt @map(name: "updated_at")
+  chatId    String      @map("chat_id")
+  note      String?
+  time      String
+  isCheck   Boolean?    @default(false) @map("is_check")
+  type      CaptchaType
+  code      String?
+  lockId    String      @map("lock_id")
+
+  @@map(name: "lock_captcha")
+}

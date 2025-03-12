@@ -1,0 +1,128 @@
+<div style="display: flex; justify-content: center;">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create">
+        Add Message
+    </button>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">message</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            {{#each messages}}
+            <tr>
+                <td>{{this.content}}</td>
+                <td>
+                    <button class="btn btn-primary btn-delete" 
+                        data-id="{{this.messageId}}" >Delete</button>
+                </td>
+            </tr>
+            {{/each}}
+
+        </tbody>
+    </table>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modal-create">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"> 
+                <div class="form-group">
+                    <label for="message_id">Message Id</label>
+                    <input type="text" id="message_id" class="form-control" name="message_id" placeholder="Input Message Id" required="true">
+                </div>
+                <div class="form-group">
+                    <label for="text">Content</label>
+                    <input class="form-control" id="text" name="text" placeholder="Input content" required="true">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-add">Add</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    //const BASE_URL = 'http://localhost:9000/'
+    //const BASE_URL = 'http://198.252.110.62:9000/'
+    $(document).ready(function () {
+        $('.btn-delete').click(function () {
+            handleDelete(this)
+        })
+
+        $('#btn-add').click(function () {
+            if ($('input[name="message_id"]').val() == '') {
+                $('input[name="message_id"]').focus()
+                alert('Message Id is required')
+            } else if ($('input[name="text"]').val() == '') {
+                $('input[name="text"]').focus()
+                alert('Content is required')
+            } 
+         //   else if ($('select[name="bot"]').val() == '') {
+          //      $('select[name="bot"]').focus()
+         //       alert('Bot is required')
+         //   } 
+            else {
+                $.ajax({
+                    url: "/messages",
+                    type: "POST",
+                    data: {
+                        message_id: $('input[name="message_id"]').val(),
+                        text: $('input[name="text"]').val()
+                    },
+                    success: function (data) {
+                        //console.log(data)
+                        if (!data.is_error) {
+                            window.location.href = '/messages'
+                        }else{
+                            alert(data.message)
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr)
+                        alert(xhr.responseText)
+                    }
+                })
+            }
+        })
+        $('#modal-create').on('hidden.bs.modal', function (e) {
+            $('input[name="message_id"]').val('')
+            $('input[name="text"]').val('')
+        })
+    })
+    function handleDelete(element) {
+        const message_id = $(element).attr('data-id')
+        const bot = $(element).attr('data-bot')
+        let rtn = confirm("Confirm Delete")
+        if (rtn) {
+            $.ajax({
+                url: `/messages/${message_id}`,
+                type: "DELETE",
+                success: function (data) {
+                    //console.log(data)
+                    if (!data.is_error) {
+                        $(element).parent().parent().remove()
+                    }
+                    alert(data.message)
+                },
+                error: function (xhr, status, error) {
+                    //console.log(xhr)
+                    alert(xhr.responseText)
+                }
+            })
+        }
+    }
+
+</script>

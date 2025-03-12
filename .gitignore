@@ -1,0 +1,11 @@
+node_modules
+dist
+types
+.env
+package-lock.json
+run.sh
+_td_database
+_td_files
+types
+.DS_Store
+.vscode
